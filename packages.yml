@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Installing Packages
+      yum: 
+        name: ["git","httpd"]
+        state: present
+    - name: Starting Apache
+      service: 
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Coping Source
+      copy: 
+        src: ./index.html
+        dest: /var/www/html/
+      notify:
+        - Restarting Apache
+  handlers:
+    - name: Restarting Apache
+      service: 
+        name: httpd
+        state: restarted

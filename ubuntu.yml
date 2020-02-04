@@ -1,0 +1,16 @@
+---
+    - name: Installing Packages
+      apt: 
+        name: ["git","apache2"]
+        state: present
+      when: ansible_os_family == 'Debian'
+    - name: Starting Apache
+      service: 
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_os_family == 'Debian'
+    - name: Coping Source
+      copy: 
+        src: ./index.html
+        dest: /var/www/html/
