@@ -1,0 +1,35 @@
+---
+ - hosts: all
+   become: true
+   vars_files:
+     - ./vars.yml
+   tasks: 
+     - name: Installing java-{{java_version}}
+       yum:
+         name: java-{{java_version}}-openjdk-devel
+         state: present
+
+     - name: Correct java version({{java_version}})
+       alternatives:
+         name: java
+         path: /usr/lib/jvm/java-{{java_version}}-openjdk-{{java_version}}.222.b10-0.amzn2.0.1.x86_64/jre/bin/java
+     - name: Correct javac version({{java_version}})
+       alternatives:
+         name: javac
+         path: /usr/lib/jvm/java-{{java_version}}-openjdk-{{java_version}}.222.b10-0.amzn2.0.1.x86_64/bin/javac
+     - name: Adding Tomcat Group
+       group:
+         name: tomcat
+     - name: Adding Tomcat User
+       user: name=tomcat group=tomcat
+     - name: Downloading Tomcat TAR file
+       get_url:
+         url: http://apachemirror.wuchna.com/tomcat/tomcat-{{tomcat_mazor_version}}/v{{tomcat_version}}/bin/apache-tomcat-{{tomcat_version}}.tar.gz
+         dest: /opt/apache-tomcat-{{tomcat_version}}.tar.gz
+     - name: Extracting  Tomcat archive
+       command: chdir=/usr/share /bin/tar xvf /opt/apache-tomcat-{{tomcat_version}}.tar.gz -C /opt/ creates=/opt/apache-tomcat-{{tomcat_version}}
+     - name: Symlink install directory
+       file: src=/opt/apache-tomcat-{{tomcat_version}} path=/usr/share/tomcat state=link
+     - name: changing owner ship of tomcat
+       file: path=/usr/share/tomcat/ owner=tomcat group=tomcat state=directory recurse=yes
+

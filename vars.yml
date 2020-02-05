@@ -1,0 +1,4 @@
+---
+ - java_version: 1.8.0
+ - tomcat_version: 8.5.50
+ - tomcat_mazor_version: 8
