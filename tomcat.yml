@@ -3,12 +3,18 @@
    become: true
    vars_files:
      - ./vars.yml
-   tasks: 
+   tasks:
      - name: Installing java-{{java_version}}
        yum:
          name: java-{{java_version}}-openjdk-devel
          state: present
-
+       tags:
+         - tag1
+     - name: task-1
+       debug:
+         msg: "Java Installed Successfully"
+       tags:
+         - tag2
      - name: Correct java version({{java_version}})
        alternatives:
          name: java
@@ -32,4 +38,32 @@
        file: src=/opt/apache-tomcat-{{tomcat_version}} path=/usr/share/tomcat state=link
      - name: changing owner ship of tomcat
        file: path=/usr/share/tomcat/ owner=tomcat group=tomcat state=directory recurse=yes
+     - name: Running tomcat as service
+       copy: 
+         src: tomcat.sh 
+         dest: /etc/init.d/tomcat 
+         mode: '0755'
+     - name: Start tomcat service
+       service: name=tomcat state=started enabled=yes
+     - name: Coping contect.xml file
+       copy: 
+         src: context.xml 
+         dest: /usr/share/tomcat/webapps/manager/META-INF/context.xml
+       notify: 
+         - ReStart tomcat service
+     - name: Coping tomcat-users.xml file
+       copy: 
+         src: tomcat-users.xml 
+         dest: /usr/share/tomcat/conf/tomcat-users.xml
+       notify: 
+         - ReStart tomcat service
+     - name: Coping WAR file
+       copy: 
+         src: /home/ubuntu/sample-application/target/myapp-1.0.38.war 
+         dest: /usr/share/tomcat/webapps/app.war
+       notify: 
+         - ReStart tomcat service
+   handlers:
+     - name: ReStart tomcat service
+       service: name=tomcat state=restarted 
 
